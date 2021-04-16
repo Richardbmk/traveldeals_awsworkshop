@@ -10,6 +10,11 @@
       "StackName": "amplify-traveldeals-dev-194632",
       "StackId": "arn:aws:cloudformation:us-west-2:677092314568:stack/amplify-traveldeals-dev-194632/5d697d60-9d49-11eb-9479-06a35f9061a9",
       "AmplifyAppId": "d304oxh022o8nn"
+    },
+    "categories": {
+      "auth": {
+        "traveldeals1947a50b": {}
+      }
     }
   }
 }

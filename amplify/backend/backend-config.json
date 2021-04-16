@@ -1,1 +1,10 @@
-{}
+{
+  "auth": {
+    "traveldeals1947a50b": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
+}
