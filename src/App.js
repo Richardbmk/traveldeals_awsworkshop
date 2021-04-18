@@ -7,6 +7,7 @@ import { Divider, Form, Icon, Input, Modal, Button, Card, Menu, Dropdown,
   Container, Header, Segment, Placeholder } from 'semantic-ui-react';
 
 import Amplify, { Auth } from 'aws-amplify';
+import Analytics from '@aws-amplify/analytics';
 import API, { graphqlOperation } from '@aws-amplify/api';
 import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
 import { AmplifyAuthenticator, AmplifySignUp } from '@aws-amplify/ui-react';
@@ -20,11 +21,19 @@ import faker from 'faker';
 import awsconfig from './aws-exports';
 Amplify.configure(awsconfig);
 
+Analytics.autoTrack('pageView', {
+  enable: true,
+  type: 'SPA'
+});
+
+Analytics.autoTrack('event', {
+  enable: true
+});
+
 const CATEGORIES = ['Outdoors', 'Cities'];
 const COLORS = ['orange', 'yellow', 'green', 'blue', 'violet', 'purple', 'pink'];
 
 function DealCardImage({dealName, minHeight, fontSize}) {
-
   function dealColor(name) {
     if (!name) name = '';
     return COLORS[Math.floor(name.length % COLORS.length)];
@@ -44,7 +53,6 @@ DealCardImage.propTypes = {
 };
 
 function DealCreation() {
-
   const [modalOpen, setModalOpen] = React.useState(false);
   const [name, setName] = React.useState();
   const [category, setCategory] = React.useState();
@@ -52,6 +60,7 @@ function DealCreation() {
   function handleOpen() {
     handleReset();
     setModalOpen(true);
+    Analytics.record({ name: 'createDeal-start'});
   };
 
   function handleReset() {
@@ -104,22 +113,23 @@ function DealCreation() {
         <Button primary labelPosition='right' content='Reset' icon='refresh' onClick={handleReset}/>
         <Button positive labelPosition='right' icon='checkmark' content='Save' href='/'
           disabled = {!(name && category)} 
-          onClick={handleSave}/>
+          onClick={handleSave}
+          data-amplify-analytics-on='click'
+          data-amplify-analytics-name='createDeal-complete'
+          data-amplify-analytics-attrs={`category:${category}`}/>
       </Modal.Actions>
     </Modal>
   );
 };
 
 function DealsListCardGroup({ items, pageViewOrigin, cardStyle }) {
-
   function dealCards() {
     return items
       .map(deal =>
         <Card
           key={deal.id}
           as={Link} to={{ pathname: `/deals/${deal.id}`, state: { pageViewOrigin } }}
-          style={cardStyle}
-        >
+          style={cardStyle}>
 
           <DealCardImage dealName={deal.name} minHeight={140} fontSize={24}/>
           <Card.Content>
@@ -144,7 +154,6 @@ DealsListCardGroup.propTypes = {
 };
 
 function DealsList() {
-  
   const [deals, setDeals] = React.useState([]);
 
   React.useEffect(() => {
@@ -246,8 +255,22 @@ function AuthStateApp() {
     onAuthUIStateChange((nextAuthState, authData) => {
       setAuthState(nextAuthState);
       setUser(authData);
+  
+      if (authData) {
+        const { email, sub } = authData.attributes;
+        Analytics.updateEndpoint({
+          address: email,
+          channelType: 'EMAIL',
+          optOut: 'NONE',
+          userId: sub,
+          userAttributes: {
+            username: [authData.username]
+          }
+        });
+      }
     });
   }, []);
+  
 
   document.title = 'Travel Deals';
   return authState === AuthState.SignedIn && user ? (

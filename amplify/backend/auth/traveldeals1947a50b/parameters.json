@@ -1,6 +1,6 @@
 {
     "identityPoolName": "traveldeals1947a50b_identitypool_1947a50b",
-    "allowUnauthenticatedIdentities": false,
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "travel1947a50b",
     "userPoolName": "traveldeals1947a50b_userpool_1947a50b",
     "autoVerifiedAttributes": [

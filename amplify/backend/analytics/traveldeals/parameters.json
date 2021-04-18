@@ -1,0 +1,21 @@
+{
+    "appName": "traveldeals",
+    "roleName": "pinpointLambdaRole21a087da",
+    "cloudformationPolicyName": "cloudformationPolicy21a087da",
+    "cloudWatchPolicyName": "cloudWatchPolicy21a087da",
+    "pinpointPolicyName": "pinpointPolicy21a087da",
+    "authPolicyName": "pinpoint_amplify_21a087da",
+    "unauthPolicyName": "pinpoint_amplify_21a087da",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "authRoleArn": {
+        "Fn::GetAtt": [
+            "AuthRole",
+            "Arn"
+        ]
+    }
+}
