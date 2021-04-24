@@ -1,0 +1,6 @@
+{
+    "authPolicyName": "personalize_amplify",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    }
+}

@@ -20,6 +20,16 @@
           "appId": "d304oxh022o8nn",
           "type": "manual"
         }
+      },
+      "function": {
+        "traveldealsrecommendpinpoint": {
+          "deploymentBucketName": "amplify-traveldeals-dev-194632-deployment",
+          "s3Key": "amplify-builds/traveldealsrecommendpinpoint-61727a416f5137313643-build.zip"
+        },
+        "traveldealsrecommendgraphql": {
+          "deploymentBucketName": "amplify-traveldeals-dev-194632-deployment",
+          "s3Key": "amplify-builds/traveldealsrecommendgraphql-7269566d337736483366-build.zip"
+        }
       }
     }
   }

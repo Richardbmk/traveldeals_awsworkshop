@@ -1,3 +1,8 @@
+type Query {
+  getRecommendations(userId: String): [Deal] @function(name: "traveldealsrecommendgraphql-${env}")
+}
+
+
 type Deal @model
   @auth(rules: [
     { allow: owner, operations: [create, delete, update] },

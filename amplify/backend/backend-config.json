@@ -35,6 +35,28 @@
     "traveldeals": {
       "service": "Pinpoint",
       "providerPlugin": "awscloudformation"
+    },
+    "traveldealsPersonalize": {
+      "service": "Personalize",
+      "providerPlugin": "awscloudformation"
+    },
+    "traveldealsKinesis": {
+      "service": "Kinesis",
+      "providerPlugin": "awscloudformation"
+    }
+  },
+  "function": {
+    "traveldealsrecommendpinpoint": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": []
+    },
+    "traveldealsrecommendgraphql": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": []
     }
   }
 }

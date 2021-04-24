@@ -1,0 +1,12 @@
+{
+  "kinesisStreamName": "traveldealsKinesis",
+  "kinesisStreamShardCount": 1,
+  "authRoleName": {
+    "Ref": "AuthRoleName"
+  },
+  "unauthRoleName": {
+    "Ref": "UnauthRoleName"
+  },
+  "authPolicyName": "kinesis_amplify_9866246b",
+  "unauthPolicyName": "kinesis_amplify_9866246b"
+}

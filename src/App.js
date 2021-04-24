@@ -4,10 +4,10 @@ import './App.css';
 import PropTypes from 'prop-types';
 import { BrowserRouter as Router, Route, NavLink, Link } from 'react-router-dom';
 import { Divider, Form, Icon, Input, Modal, Button, Card, Menu, Dropdown, 
-  Container, Header, Segment, Placeholder } from 'semantic-ui-react';
+  Container, Header, Segment, Placeholder, Grid } from 'semantic-ui-react';
 
 import Amplify, { Auth } from 'aws-amplify';
-import Analytics from '@aws-amplify/analytics';
+import { Analytics, AmazonPersonalizeProvider, AWSKinesisProvider } from '@aws-amplify/analytics';
 import API, { graphqlOperation } from '@aws-amplify/api';
 import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
 import { AmplifyAuthenticator, AmplifySignUp } from '@aws-amplify/ui-react';
@@ -28,6 +28,19 @@ Analytics.autoTrack('pageView', {
 
 Analytics.autoTrack('event', {
   enable: true
+});
+
+Analytics.addPluggable(new AmazonPersonalizeProvider());
+Analytics.addPluggable(new AWSKinesisProvider());
+
+Analytics.configure({
+  AmazonPersonalize: {
+    trackingId: '', // TODO: Set to Personalize Tracking ID, e.g.: 'efd7edf5-7ddc-4732-b4b3-0374c6b721e9
+    region: awsconfig.aws_project_region
+  },
+  AWSKinesis: {
+    region: awsconfig.aws_project_region
+  }
 });
 
 const CATEGORIES = ['Outdoors', 'Cities'];
@@ -192,9 +205,52 @@ function DealsList() {
   );
 };
 
+function RecommendedDealsList({ recommendedDeals }) {
+  return (
+    <Segment style={{ margin: 'auto', width: '100%', maxWidth: 720 }}>
+      <Header as='h2'>Recommended items for you:</Header>
+      { recommendedDeals.length > 0 ? (
+        <DealsListCardGroup
+          items={recommendedDeals}
+          pageViewOrigin='Recommendations'
+          cardStyle={{ width: '100%', maxWidth: 220 }}/>
+      ) : (
+        <Grid columns={3}>
+          <Grid.Column>
+            <Placeholder>
+              <Placeholder.Image rectangular/>
+              <Placeholder.Line length='long'/>
+              <Placeholder.Line/>
+            </Placeholder>
+          </Grid.Column>
+          <Grid.Column>
+            <Placeholder>
+              <Placeholder.Image rectangular/>
+              <Placeholder.Line length='long'/>
+              <Placeholder.Line/>
+            </Placeholder>
+          </Grid.Column>
+          <Grid.Column>
+            <Placeholder>
+              <Placeholder.Image rectangular/>
+              <Placeholder.Line length='long'/>
+              <Placeholder.Line/>
+            </Placeholder>
+          </Grid.Column>
+        </Grid>
+      ) }
+    </Segment>
+  );
+};
+
+RecommendedDealsList.propTypes = {
+  recommendedDeals: PropTypes.array
+};
+
 function DealDetails({ id, locationState }) {
   const [deal, setDeal] = React.useState({});
   const [loading, setLoading] = React.useState(true);
+  const [recommendedDeals, setRecommendedDeals] = React.useState([]);
 
   React.useEffect(() => {
     async function loadDealInfo() {
@@ -203,12 +259,48 @@ function DealDetails({ id, locationState }) {
       setDeal(deal);
       setLoading(false);
       document.title = `${deal.name} - Travel Deals`;
+
+      const user = await Auth.currentAuthenticatedUser();
+
+      Analytics.record({
+          eventType: 'PageView',
+          userId: user.attributes.sub,
+          properties: {
+              itemId: deal.id
+          }
+      }, 'AmazonPersonalize');
+
+      const recommendedDealsResult = await API.graphql(graphqlOperation(
+        queries.getRecommendations, 
+        { userId: user.attributes.sub }
+      ));
+      const recommendedDeals = recommendedDealsResult.data.getRecommendations;
+      setRecommendedDeals(recommendedDeals);
+
+      let pageViewOrigin = 'URL';
+      if (locationState && locationState.pageViewOrigin) {
+        pageViewOrigin = locationState.pageViewOrigin;
+      }
+
+      Analytics.record({
+        data: {
+          eventType: 'PageView',
+          pageViewOrigin,
+          userId: user.attributes.sub,
+          itemId: deal.id,
+          itemName: deal.name,
+          itemCategory: deal.category,
+          timestamp: new Date()
+        },
+        streamName: '' // TODO: Set to Kinesis Stream Name, and it has to include environment name too, e.g.: 'traveldealsKinesis-dev'
+      }, 'AWSKinesis');
     };
     loadDealInfo();
 
     return () => {
       setDeal({});
       setLoading(true);
+      setRecommendedDeals([]);
     };
   }, [id, locationState]);
 
@@ -238,6 +330,7 @@ function DealDetails({ id, locationState }) {
 
       </Card>
       <Divider hidden/>
+      <RecommendedDealsList recommendedDeals={recommendedDeals}/>
     </Container>
   );
 };
@@ -271,7 +364,6 @@ function AuthStateApp() {
     });
   }, []);
   
-
   document.title = 'Travel Deals';
   return authState === AuthState.SignedIn && user ? (
       <div className='App'>

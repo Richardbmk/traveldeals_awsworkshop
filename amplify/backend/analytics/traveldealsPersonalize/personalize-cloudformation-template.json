@@ -1,0 +1,40 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Personalize resource stack creation using Amplify CLI",
+    "Parameters": {
+        "env": {
+            "Type":  "String"
+        },
+        "authPolicyName": {
+            "Type": "String"
+        },
+        "authRoleName": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "CognitoAuthPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": {
+                    "Ref": "authPolicyName"
+                },
+                "Roles": [
+                    {
+                        "Ref": "authRoleName"
+                    }
+                ],
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "personalize:PutEvents",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
